@@ -1,16 +1,26 @@
 package com.example.models;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Juego {
 
-    public static void rule() {
+    private Map<String, Integer> apuestasRule=new HashMap<>();
 
-    }
-    public static void coinflip() {
-    }
-    public static void martingala() {
+    public int rule() {
+        // Genera un número entre 0 y 36 (ambos incluidos)
+        return ThreadLocalRandom.current().nextInt(0, 37);
     }
 
+    public synchronized void apostarRule(String nombre, int numeroApostado){
+        apuestasRule.put(nombre, numeroApostado);
+    }
 
+    public Map<String, Integer> getApuestasRule() {
+        return apuestasRule;
+    }
 
 
 }

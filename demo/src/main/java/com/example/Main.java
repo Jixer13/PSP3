@@ -61,5 +61,73 @@ public class Main {
         } while (opcion != 4);
     }
 
+    private static void martingala() {
+        // IMPLEMENTAR LÓGICA DEL JUEGO AQUÍ
+    }
+
+    private static void coinflip() {
+        // IMPLEMENTAR LÓGICA DEL JUEGO AQUÍ
+    }
+
+    private static void rule() {
+        System.out.println("Iniciando juego: Ruleta");
+        Juego juego = new Juego();
+        Banca banca = new Banca();
+
+        Jugador[] jugadores = {
+                new Jugador("Maria", juego),
+                new Jugador("Juan", juego),
+                new Jugador("Pedro", juego),
+                new Jugador("Daniela", juego)
+        };
+
+        Thread[] threads = new Thread[jugadores.length];
+        for (int i = 0; i < jugadores.length; i++) {
+            threads[i] = new Thread(jugadores[i]);
+        }
+
+        System.out.println("Hagan sus apuestas...");
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        try {
+            for (Thread thread : threads) {
+                thread.join();
+            }
+        } catch (InterruptedException e) {
+            System.err.println("Uno de los hilos fue interrumpido.");
+            Thread.currentThread().interrupt();
+        }
+
+        System.out.println("No va más! La bola está girando...");
+
+        System.out.println("Apuestas realizadas:");
+        for (Jugador jugador : jugadores) {
+            System.out.println("- " + jugador.getNombre() + " apostó al " + jugador.getNumeroApostado());
+        }
+
+        int numeroGanador = juego.rule();
+        System.out.println("El número ganador es: " + numeroGanador);
+
+        boolean haHabidoGanador = false;
+        for (Jugador jugador : jugadores) {
+            if (jugador.getNumeroApostado() == numeroGanador) {
+                jugador.setSaldo(jugador.getSaldo() + 360);
+                banca.setSaldo(banca.getSaldo() - 360); // La banca paga el premio
+                System.out.println("¡El jugador " + jugador.getNombre() + " ha ganado! Su nuevo saldo es: " + jugador.getSaldo());
+                haHabidoGanador = true;
+            } else {
+                banca.setSaldo(banca.getSaldo() + 10); // La banca se queda con la apuesta
+            }
+        }
+
+        if (!haHabidoGanador) {
+            System.out.println("No ha habido ganadores en esta ronda.");
+        }
+
+        System.out.println("Saldo final de la Banca en esta ronda: " + banca.getSaldo());
+    }
+
 
 }
