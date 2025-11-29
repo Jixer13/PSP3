@@ -18,24 +18,25 @@ public class Main {
 
     private static void menu(Scanner sc) {
 
-        int opcion;
-
-        System.out.println("\n Bienvenidos al Casino GCGM \n");
-        System.out.println("En nuestros juegos la Banca va a generar un número del 0 al 36 , y los jugadores del 1 al 36\n" +
-                "   - Si sale 0 todos los jugadores pierden.\n" +
-                "   - Todos los jugadores apuestan 10.\n" +
-                "   - Si los jugadores tiene el mismo número que la banca habrán ganado esa ronda." +
-                "Estas son las normas generales, las normas más específicas se explicaran en cada juego.");
-        System.out.println("--------------------------------------------------------------------------------");
-        System.out.println("Seleccione el juego al que le interese jugar :");
-        System.out.println("1. La Rule");
-        System.out.println("2. Coin flip");
-        System.out.println("3. Martingala");
-        System.out.println("4. Salir");
-
-        opcion = sc.nextInt();
+        int opcion=0;
 
         do {
+            System.out.println("\n Bienvenidos al Casino GCGM \n");
+            System.out.println("En nuestros juegos la Banca va a generar un número del 0 al 36 , y los jugadores del 1 al 36\n" +
+                    "   - Si sale 0 todos los jugadores pierden.\n" +
+                    "   - Todos los jugadores apuestan 10.\n" +
+                    "   - Si los jugadores tiene el mismo número que la banca habrán ganado esa ronda." +
+                    "Estas son las normas generales, las normas más específicas se explicaran en cada juego.");
+            System.out.println("--------------------------------------------------------------------------------");
+            System.out.println("Seleccione el juego al que le interese jugar :");
+            System.out.println("1. La Rule");
+            System.out.println("2. Coin flip");
+            System.out.println("3. Martingala");
+            System.out.println("4. Salir");
+
+            opcion = sc.nextInt();
+            sc.nextLine(); // Consume the leftover newline
+
             switch (opcion) {
                 case 1:
                     System.out.println("Has seleccionado La Rule\n"+
@@ -58,6 +59,7 @@ public class Main {
                     System.out.println("Has dejado que otro gane");
                     break;
             }
+
         } while (opcion != 4);
     }
 
