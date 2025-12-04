@@ -14,6 +14,9 @@ public class Juego {
         // Genera un número entre 0 y 36 (ambos incluidos)
         return ThreadLocalRandom.current().nextInt(0, 37);
     }
+    public int coinFlipRule(){
+        return ThreadLocalRandom.current().nextInt(0,37);
+    }
 
     public synchronized void apostarRule(String nombre, int numeroApostado){
         apuestasRule.put(nombre, numeroApostado);

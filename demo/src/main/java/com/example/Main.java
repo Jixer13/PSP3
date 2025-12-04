@@ -1,6 +1,8 @@
 package com.example;
 
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+
 import com.example.models.*;
 
 
@@ -8,15 +10,15 @@ public class Main {
 
     private static Scanner sc = new Scanner(System.in);
 
-        static Juego juego = new Juego();
-        static Banca banca = new Banca();
+    static Juego juego = new Juego();
+    static Banca banca = new Banca();
 
-        static Jugador[] jugadores = {
-                new Jugador("Maria", juego),
-                new Jugador("Juan", juego),
-                new Jugador("Pedro", juego),
-                new Jugador("Daniela", juego)
-        };
+    static Jugador[] jugadores = {
+            new Jugador("Maria", juego),
+            new Jugador("Juan", juego),
+            new Jugador("Pedro", juego),
+            new Jugador("Daniela", juego)
+    };
 
 
     public static void main(String[] args) {
@@ -27,7 +29,7 @@ public class Main {
 
     private static void menu(Scanner sc) {
 
-        int opcion=0;
+        int opcion = 0;
 
         do {
             System.out.println("\n Bienvenidos al Casino GCGM \n");
@@ -49,7 +51,7 @@ public class Main {
 
             switch (opcion) {
                 case 1:
-                    System.out.println("Has seleccionado La Rule\n"+
+                    System.out.println("Has seleccionado La Rule\n" +
                             "   - Los jugadores que ganen recibirán 360€ por cada ronda ganada.");
                     rule();
                     break;
@@ -69,7 +71,7 @@ public class Main {
                     System.out.println("Información Dinero Jugadores\n" +
                             "Aquí tienes el nombre de los jugadores y el dinero que les queda");
                     for (int i = 0; i < jugadores.length; i++) {
-                        System.out.println(jugadores[i].getNombre()+": "+jugadores[i].getSaldo()+"€");
+                        System.out.println(jugadores[i].getNombre() + ": " + jugadores[i].getSaldo() + "€");
                     }
 
 
@@ -83,83 +85,247 @@ public class Main {
     }
 
     private static void martingala() {
-        // IMPLEMENTAR LÓGICA DEL JUEGO AQUÍ
+        boolean continuar = true;
+        Map<Jugador, Integer> apuestas = new HashMap<>();
+        List<Jugador> activos = new ArrayList<>(Arrays.asList(jugadores));
+
+        for (Jugador j : jugadores) {
+            apuestas.put(j, 10);
+        }
+
+        Scanner sc = new Scanner(System.in);
+
+        do {
+            if (banca.getSaldo() < 360 * 4) {
+                System.out.println("La banca no se puede permitir pagar");
+                continuar = false;
+            } else if (activos.isEmpty()) {
+                System.out.println("Todos se han retirado");
+                continuar = false;
+            } else {
+                System.out.println("\n=== Iniciando nueva ronda: Martingala ===");
+
+                System.out.println("Hagan sus apuestas...");
+
+                // SIMPLIFICADO: Sin threads, cada jugador apuesta directamente
+                for (Jugador j : activos) {
+                    // El jugador elige un número (esto debería estar en su clase)
+                    j.setNumeroApostado(ThreadLocalRandom.current().nextInt(0, 37));
+                }
+
+                System.out.println("No va más! La bola está girando...");
+
+                // Mostrar apuestas UNA SOLA VEZ
+                System.out.println("Apuestas realizadas:");
+                for (Jugador j : activos) {
+                    int apuestaActual = apuestas.get(j);
+                    System.out.println("- " + j.getNombre() + " apuesta " +
+                            apuestaActual + "€ al número " + j.getNumeroApostado());
+
+                    // Descontar la apuesta del saldo del jugador
+                    j.setSaldo(j.getSaldo() - apuestaActual);
+                }
+
+                int ganador = ThreadLocalRandom.current().nextInt(0, 37);
+                System.out.println("Número ganador: " + ganador);
+
+                List<Jugador> retirados = new ArrayList<>();
+                boolean huboGanador = false;
+
+                for (Jugador j : activos) {
+                    int apuestaActual = apuestas.get(j);
+
+                    if (j.getNumeroApostado() == ganador) {
+                        j.setSaldo(j.getSaldo() + 360);
+                        banca.setSaldo(banca.getSaldo() - 360);
+                        apuestas.put(j, 10);
+                        System.out.println(j.getNombre() + " gana 360€ (acertó el " + j.getNumeroApostado() + ")");
+                        huboGanador = true;
+                    } else {
+                        int siguienteApuesta = apuestaActual * 2;
+
+                        if (siguienteApuesta > 320) {
+                            System.out.println(j.getNombre() + " se retira (límite 320€) - apostó al " + j.getNumeroApostado());
+                            retirados.add(j);
+                        } else if (j.getSaldo() < siguienteApuesta) {
+                            System.out.println(j.getNombre() + " se retira (sin saldo) - apostó al " + j.getNumeroApostado());
+                            retirados.add(j);
+                        } else {
+                            apuestas.put(j, siguienteApuesta);
+                            System.out.println(j.getNombre() + " dobla a " + siguienteApuesta + "€ - apostó al " + j.getNumeroApostado());
+                        }
+
+                        banca.setSaldo(banca.getSaldo() + apuestaActual);
+                    }
+                }
+
+                activos.removeAll(retirados);
+
+                if (!huboGanador) {
+                    System.out.println("No hubo ganadores");
+                }
+
+                System.out.println("Banca: " + banca.getSaldo() + "€");
+                System.out.println("Jugadores activos: " + activos.size());
+
+                if (!activos.isEmpty()) {
+                    System.out.print("\n¿Otra ronda? (s/n): ");
+                    String respuesta = sc.nextLine().trim();
+
+                    if (respuesta.equalsIgnoreCase("n")) {
+                        continuar = false;
+                    } else if (!respuesta.equalsIgnoreCase("s")) {
+                        System.out.println("Respuesta no reconocida, continuando...");
+                    }
+                } else {
+                    continuar = false;
+                }
+            }
+        } while (continuar);
+
+        sc.close();
+        System.out.println("\n=== Juego terminado ===");
+        System.out.println("Resumen final:");
+        System.out.println("Banca: " + banca.getSaldo() + "€");
+        for (Jugador j : jugadores) {
+            System.out.println(j.getNombre() + ": " + j.getSaldo() + "€");
+        }
     }
 
     private static void coinflip() {
         // IMPLEMENTAR LÓGICA DEL JUEGO AQUÍ
+        boolean bool = true;
 
-        Thread[] threads = new Thread[jugadores.length];
-        for (int i = 0; i < jugadores.length; i++) {
-            threads[i] = new Thread(jugadores[i]);
-        }
+        do {
+            if (banca.getSaldo() < (20 * 4)) {
+                System.out.println("La banca no se puede permitir pagar");
+                bool = false;
+            } else {
+                System.out.println("Iniciando juego: Par o Impar");
 
-        System.out.println("Hagan sus apuestas...");
-        for (Thread thread : threads) {
-            thread.start();
-        }
+                Thread[] threads = new Thread[jugadores.length];
+                for (int i = 0; i < jugadores.length; i++) {
+                    threads[i] = new Thread(jugadores[i]);
+                }
 
-    }
-
-    private static void rule() { // meter el metodo dentro de un do while, que funcione mientras la banca se pueda permitir pagar
-    boolean bool = true;
-    do{
-        if (banca.getSaldo() < (360*4)){
-            System.out.println("La banca no se puede permitir pagar");
-            bool = false;
-        }
-        else {
-            System.out.println("Iniciando juego: Ruleta");
-
-
-            Thread[] threads = new Thread[jugadores.length];
-            for (int i = 0; i < jugadores.length; i++) {
-                threads[i] = new Thread(jugadores[i]);
-            }
-
-            System.out.println("Hagan sus apuestas...");
-            for (Thread thread : threads) {
-                thread.start();
-            }
-
-            try {
+                System.out.println("Hagan sus apuestas...");
                 for (Thread thread : threads) {
-                    thread.join();
+                    thread.start();
                 }
-            } catch (InterruptedException e) {
-                System.err.println("Uno de los hilos fue interrumpido.");
-                Thread.currentThread().interrupt();
-            }
 
-            System.out.println("No va más! La bola está girando...");
-
-            System.out.println("Apuestas realizadas:");
-            for (Jugador jugador : jugadores) {
-                System.out.println("- " + jugador.getNombre() + " apostó al " + jugador.getNumeroApostado());
-            }
-
-            int numeroGanador = juego.rule();
-            System.out.println("El número ganador es: " + numeroGanador);
-
-            boolean haHabidoGanador = false;
-            for (Jugador jugador : jugadores) {
-                if (jugador.getNumeroApostado() == numeroGanador) {
-                    jugador.setSaldo(jugador.getSaldo() + 360);
-                    banca.setSaldo(banca.getSaldo() - 360); // La banca paga el premio
-                    System.out.println("¡El jugador " + jugador.getNombre() + " ha ganado! Su nuevo saldo es: " + jugador.getSaldo()+"€");
-                    haHabidoGanador = true;
-                } else {
-                    banca.setSaldo(banca.getSaldo() + 10); // La banca se queda con la apuesta
+                try {
+                    for (Thread thread : threads) {
+                        thread.join();
+                    }
+                } catch (InterruptedException e) {
+                    System.err.println("Uno de los hilos fue interrumpido.");
+                    Thread.currentThread().interrupt();
                 }
+
+                System.out.println("No va más! La bola está girando...");
+
+                System.out.println("Apuestas realizadas:");
+                for (Jugador jugador : jugadores) {
+                    System.out.println("- " + jugador.getNombre() + " apostó al " + jugador.getNumeroApostado());
+                }
+
+                int numeroGanador = ThreadLocalRandom.current().nextInt(0, 37);
+                System.out.println("El número ganador es: " + numeroGanador);
+
+                boolean haHabidoGanador = false;
+
+
+                for (Jugador jugador : jugadores) {
+                    if (numeroGanador != 0) {
+
+                        if ((numeroGanador % 2 == 0 && jugador.getNumeroApostado() % 2 == 0) ||
+                                (numeroGanador % 2 == 1 && jugador.getNumeroApostado() % 2 == 1)) {
+
+                            jugador.setSaldo(jugador.getSaldo() + 20);
+                            banca.setSaldo(banca.getSaldo() - 20);
+                            System.out.println("¡El jugador " + jugador.getNombre() + " ha ganado! Su nuevo saldo es: " + jugador.getSaldo() + "€");
+                            haHabidoGanador = true;
+
+                        } else {
+                            banca.setSaldo(banca.getSaldo() + 10);
+                        }
+                    } else {
+
+                        banca.setSaldo(banca.getSaldo() + 10);
+                        System.out.println("Ha salido 0, el jugador " + jugador.getNombre() + " pierde.");
+                    }
+                }
+
+                if (!haHabidoGanador && numeroGanador != 0) {
+                    System.out.println("No ha habido ganadores en esta ronda.");
+                }
+
+                System.out.println("Saldo final de la Banca en esta ronda: " + banca.getSaldo() + "€");
+                bool = false;
             }
 
-            if (!haHabidoGanador) {
-                System.out.println("No ha habido ganadores en esta ronda.");
-            }
-
-            System.out.println("Saldo final de la Banca en esta ronda: " + banca.getSaldo()+"€");
-            bool = false;
-        }
-    } while (bool);
+        } while (bool);
     }
-}
+
+private static void rule ()
+        { // meter el metodo dentro de un do while, que funcione mientras la banca se pueda permitir pagar
+            boolean bool = true;
+            do {
+                if (banca.getSaldo() < (360 * 4)) {
+                    System.out.println("La banca no se puede permitir pagar");
+                    bool = false;
+                } else {
+                    System.out.println("Iniciando juego: Ruleta");
+
+
+                    Thread[] threads = new Thread[jugadores.length];
+                    for (int i = 0; i < jugadores.length; i++) {
+                        threads[i] = new Thread(jugadores[i]);
+                    }
+
+                    System.out.println("Hagan sus apuestas...");
+                    for (Thread thread : threads) {
+                        thread.start();
+                    }
+
+                    try {
+                        for (Thread thread : threads) {
+                            thread.join();
+                        }
+                    } catch (InterruptedException e) {
+                        System.err.println("Uno de los hilos fue interrumpido.");
+                        Thread.currentThread().interrupt();
+                    }
+
+                    System.out.println("No va más! La bola está girando...");
+
+                    System.out.println("Apuestas realizadas:");
+                    for (Jugador jugador : jugadores) {
+                        System.out.println("- " + jugador.getNombre() + " apostó al " + jugador.getNumeroApostado());
+                    }
+
+                    int numeroGanador = ThreadLocalRandom.current().nextInt(0, 37);
+                    System.out.println("El número ganador es: " + numeroGanador);
+
+                    boolean haHabidoGanador = false;
+                    for (Jugador jugador : jugadores) {
+                        if (jugador.getNumeroApostado() == numeroGanador) {
+                            jugador.setSaldo(jugador.getSaldo() + 360);
+                            banca.setSaldo(banca.getSaldo() - 360); // La banca paga el premio
+                            System.out.println("¡El jugador " + jugador.getNombre() + " ha ganado! Su nuevo saldo es: " + jugador.getSaldo() + "€");
+                              haHabidoGanador = true;
+                          } else {
+                              banca.setSaldo(banca.getSaldo() + 10); // La banca se queda con la apuesta
+                          }
+                      }
+
+                      if (!haHabidoGanador) {
+                          System.out.println("No ha habido ganadores en esta ronda.");
+                      }
+
+                      System.out.println("Saldo final de la Banca en esta ronda: " + banca.getSaldo() + "€");
+                      bool = false;
+                  }
+              } while (bool);
+          }
+        }
