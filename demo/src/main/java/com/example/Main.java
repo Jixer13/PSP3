@@ -93,6 +93,7 @@ public class Main {
             apuestas.put(j, 10);
         }
 
+        // NO crear un nuevo Scanner aquí, usar uno global o pasar como parámetro
         Scanner sc = new Scanner(System.in);
 
         do {
@@ -107,22 +108,18 @@ public class Main {
 
                 System.out.println("Hagan sus apuestas...");
 
-                // SIMPLIFICADO: Sin threads, cada jugador apuesta directamente
                 for (Jugador j : activos) {
-                    // El jugador elige un número (esto debería estar en su clase)
                     j.setNumeroApostado(ThreadLocalRandom.current().nextInt(0, 37));
                 }
 
                 System.out.println("No va más! La bola está girando...");
 
-                // Mostrar apuestas UNA SOLA VEZ
                 System.out.println("Apuestas realizadas:");
                 for (Jugador j : activos) {
                     int apuestaActual = apuestas.get(j);
                     System.out.println("- " + j.getNombre() + " apuesta " +
                             apuestaActual + "€ al número " + j.getNumeroApostado());
 
-                    // Descontar la apuesta del saldo del jugador
                     j.setSaldo(j.getSaldo() - apuestaActual);
                 }
 
@@ -145,14 +142,14 @@ public class Main {
                         int siguienteApuesta = apuestaActual * 2;
 
                         if (siguienteApuesta > 320) {
-                            System.out.println(j.getNombre() + " se retira (límite 320€) - apostó al " + j.getNumeroApostado());
+                            System.out.println(j.getNombre() + " se retira (límite 320€)");
                             retirados.add(j);
                         } else if (j.getSaldo() < siguienteApuesta) {
-                            System.out.println(j.getNombre() + " se retira (sin saldo) - apostó al " + j.getNumeroApostado());
+                            System.out.println(j.getNombre() + " se retira (sin saldo)");
                             retirados.add(j);
                         } else {
                             apuestas.put(j, siguienteApuesta);
-                            System.out.println(j.getNombre() + " dobla a " + siguienteApuesta + "€ - apostó al " + j.getNumeroApostado());
+                            System.out.println(j.getNombre() + " dobla a " + siguienteApuesta + "€");
                         }
 
                         banca.setSaldo(banca.getSaldo() + apuestaActual);
@@ -183,7 +180,9 @@ public class Main {
             }
         } while (continuar);
 
-        sc.close();
+        // NO cerrar el Scanner aquí
+        // sc.close();
+
         System.out.println("\n=== Juego terminado ===");
         System.out.println("Resumen final:");
         System.out.println("Banca: " + banca.getSaldo() + "€");
