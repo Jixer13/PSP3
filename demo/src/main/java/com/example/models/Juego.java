@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Juego {
 
     private Map<String, Integer> apuestasRule=new HashMap<>();
+    private Map<String, Integer> apuestasCoinflip=new HashMap<>();
 
     public int rule() {
         // Genera un número entre 0 y 36 (ambos incluidos)
@@ -23,4 +24,8 @@ public class Juego {
     }
 
 
+    public synchronized void apostarCoinflip(String nombre, int numeroApostado) {
+        apuestasCoinflip.put(nombre,numeroApostado);
+
+    }
 }

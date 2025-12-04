@@ -73,9 +73,18 @@ public class Jugador implements Runnable{
 
     @Override
     public void run() {
-        // Deduce 10 euros al apostar
-        this.setSaldo(this.getSaldo() - 10);
-        this.setNumeroApostado(numGenerador());
-        juego.apostarRule(this.getNombre(), this.getNumeroApostado());
+
+        if (!juego.equals(juego.rule())) {
+            this.setSaldo(this.getSaldo() - 10);
+            this.setNumeroApostado(this.getNumeroApostado());
+            juego.apostarCoinflip(this.getNombre(),this.getNumeroApostado());
+
+
+        } else {
+            // Deduce 10 euros al apostar
+            this.setSaldo(this.getSaldo() - 10);
+            this.setNumeroApostado(numGenerador());
+            juego.apostarRule(this.getNombre(), this.getNumeroApostado());
+        }
     }
 }
