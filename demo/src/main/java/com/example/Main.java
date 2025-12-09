@@ -192,7 +192,6 @@ public class Main {
     }
 
     private static void coinflip() {
-        // IMPLEMENTAR LÓGICA DEL JUEGO AQUÍ
         boolean bool = true;
 
         do {
@@ -225,20 +224,33 @@ public class Main {
 
                 System.out.println("Apuestas realizadas:");
                 for (Jugador jugador : jugadores) {
-                    System.out.println("- " + jugador.getNombre() + " apostó al " + jugador.getNumeroApostado());
+                    // Aquí podrías añadir también si el jugador apostó a par o impar para verlo claro
+                    String ap = (jugador.getNumeroApostado() % 2 == 0) ? "PAR" : "IMPAR";
+                    System.out.println("- " + jugador.getNombre() + " apostó al " + jugador.getNumeroApostado() + " (" + ap + ")");
                 }
 
+                // --- GENERACIÓN DEL NÚMERO ---
                 int numeroGanador = ThreadLocalRandom.current().nextInt(0, 37);
+                System.out.println("-----------------------------------");
                 System.out.println("El número ganador es: " + numeroGanador);
+
+                // --- MOSTRAR SI ES PAR O IMPAR (NUEVO) ---
+                if (numeroGanador == 0) {
+                    System.out.println("¡Ha salido el CERO! (La banca gana)");
+                } else if (numeroGanador % 2 == 0) {
+                    System.out.println("El resultado es: PAR");
+                } else {
+                    System.out.println("El resultado es: IMPAR");
+                }
+                System.out.println("-----------------------------------");
 
                 boolean haHabidoGanador = false;
 
-
+                // --- COMPROBACIÓN DE GANADORES ---
                 for (Jugador jugador : jugadores) {
                     if (numeroGanador != 0) {
-
-                        if ((numeroGanador % 2 == 0 && jugador.getNumeroApostado() % 2 == 0) ||
-                                (numeroGanador % 2 == 1 && jugador.getNumeroApostado() % 2 == 1)) {
+                        // Si el número y la apuesta tienen el mismo resto al dividir por 2, coinciden en paridad
+                        if (numeroGanador % 2 == jugador.getNumeroApostado() % 2) {
 
                             jugador.setSaldo(jugador.getSaldo() + 20);
                             banca.setSaldo(banca.getSaldo() - 20);
@@ -246,17 +258,21 @@ public class Main {
                             haHabidoGanador = true;
 
                         } else {
+                            // Perdió
                             banca.setSaldo(banca.getSaldo() + 10);
+                            // Opcional: mostrar que perdió
+                            // System.out.println("El jugador " + jugador.getNombre() + " pierde.");
                         }
                     } else {
-
+                        // Si sale 0, todos pierden
                         banca.setSaldo(banca.getSaldo() + 10);
-                        System.out.println("Ha salido 0, el jugador " + jugador.getNombre() + " pierde.");
                     }
                 }
 
                 if (!haHabidoGanador && numeroGanador != 0) {
                     System.out.println("No ha habido ganadores en esta ronda.");
+                } else if (numeroGanador == 0) {
+                    System.out.println("Al salir 0, todos los jugadores pierden esta ronda.");
                 }
 
                 System.out.println("Saldo final de la Banca en esta ronda: " + banca.getSaldo() + "€");
