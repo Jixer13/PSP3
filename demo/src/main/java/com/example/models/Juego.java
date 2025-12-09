@@ -26,7 +26,6 @@ public class Juego {
         return apuestasRule;
     }
 
-
     public synchronized void apostarCoinflip(String nombre, int numeroApostado) {
         apuestasCoinflip.put(nombre,numeroApostado);
 
