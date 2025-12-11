@@ -1,4 +1,6 @@
-package com.example.models;
+package com.example.test;
+
+import com.example.models.Banca;
 
 public class BancaTest {
 

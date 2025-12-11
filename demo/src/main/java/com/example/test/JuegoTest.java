@@ -1,4 +1,6 @@
-package com.example.models;
+package com.example.test;
+
+import com.example.models.Juego;
 
 import java.util.Map;
 import java.lang.reflect.Field;
@@ -34,7 +36,7 @@ public class JuegoTest {
                 break;
             }
         }
-        System.out.println(ok2 ? "  OK" : "  ✗ FALLO");
+        System.out.println(ok2 ? "  OK" : "   FALLO");
 
         // Prueba 3: apostarRule()
         System.out.println("\nPrueba 3 - apostarRule():");
