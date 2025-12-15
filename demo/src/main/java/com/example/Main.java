@@ -293,7 +293,7 @@ public class Main {
             // Preguntamos si quiere jugar otra ronda
             System.out.print("¿Quieres jugar otra ronda? (s/n): ");
             String respuesta = sc.nextLine();
-            continuarJugando = respuesta.equals("s");
+            continuarJugando = respuesta.equalsIgnoreCase("s");
         }
 
         System.out.println("\nHas dejado que otro gane... \n");
@@ -303,7 +303,158 @@ public class Main {
     // COIN FLIP - OPCIÓN (2)
     // ═══════════════════════════════════════════════════════════════
     private static void coinflip() {
-        System.out.println("⚠️ Coin Flip aún no está implementado\n");
+        boolean continuarJugando = true;
+        
+        // Inicializamos con el valor actual. Si es 0, el bucle forzará a esperar el cambio.
+        int contadorGeneracionesAnterior = EstadoJuego.contadorGeneraciones;
+
+        while (continuarJugando) {
+
+            // Verificamos si la banca puede pagar (20€ * 4 jugadores = 80€ min)
+            if (banca.getSaldo() < 80) {
+                System.out.println("\nLa banca no tiene suficiente saldo para pagar los premios");
+                System.out.println("   Saldo actual de la banca: " + banca.getSaldo() + "€");
+                break;
+            }
+
+            // Verificamos si el jugador tiene saldo
+            if (jugadorHumano.getSaldo() < 10) {
+                System.out.println("\nNo tienes suficiente saldo para apostar (necesitas 10€)");
+                break;
+            }
+
+            // Esperamos a que se generen nuevos numeros.
+            // Eliminamos el 'if > 0' para obligar a esperar siempre una nueva generación fresca,
+            // evitando leer 0s iniciales.
+            
+            System.out.println("\nEsperando a que los jugadores generen nuevos numeros...");
+            System.out.print("Generando");
+
+            // Bucle de espera con feedback visual
+            while (EstadoJuego.contadorGeneraciones == contadorGeneracionesAnterior) {
+                try {
+                    Thread.sleep(1000);
+                    System.out.print("."); // Feedback visual para que no parezca colgado
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            System.out.println(" ¡Listos!\n");
+            
+            // Pausa pequeña para asegurar que todos los hilos (incluida banca) terminen de actualizar
+            try { Thread.sleep(500); } catch (InterruptedException e) {}
+
+            System.out.println("-------------------------------------------------");
+            System.out.println("                    COIN FLIP                    ");
+            System.out.println("-------------------------------------------------\n");
+
+            // Capturamos las apuestas
+            System.out.println("Guardando las apuestas actuales...\n");
+
+            int[] numerosApostados = new int[jugadores.length];
+            for (int i = 0; i < jugadores.length; i++) {
+                numerosApostados[i] = jugadores[i].getNumeroApostado();
+            }
+            int numeroJugadorHumano = jugadorHumano.getNumeroApostado();
+
+            System.out.println(" APUESTAS (Pares/Impares):");
+            System.out.println("──────────────────────────────────────────────────────────────");
+            
+            // Helper local para mostrar par/impar
+            for (int i = 0; i < jugadores.length; i++) {
+                String tipo = (numerosApostados[i] % 2 == 0) ? "PAR" : "IMPAR";
+                System.out.println("   • " + jugadores[i].getNombre() + " tiene el " + numerosApostados[i] + " [" + tipo + "]");
+            }
+            String tipoHumano = (numeroJugadorHumano % 2 == 0) ? "PAR" : "IMPAR";
+            System.out.println("   • " + jugadorHumano.getNombre() + " tiene el " + numeroJugadorHumano + " [" + tipoHumano + "]");
+            System.out.println("──────────────────────────────────────────────────────────────\n");
+
+            System.out.println("🪙 La banca muestra su número...\n");
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // CORRECCIÓN: Usamos el número generado por el Hilo de la Banca
+            int numeroGanador = banca.getNumeroApostado();
+
+            System.out.println("--------------------------------");
+            System.out.println("     NÚMERO BANCA: " + String.format("%2d", numeroGanador));
+            System.out.println("--------------------------------\n");
+
+            boolean haHabidoGanador = false;
+
+            System.out.println("RESULTADOS:");
+            System.out.println("──────────────────────────────────────────────────────────────");
+
+            // LÓGICA DE PREMIOS
+            // Si sale 0 (la banca gana todo en CoinFlip también según reglas generales)
+            if (numeroGanador == 0) {
+                System.out.println("¡Ha salido 0! La banca gana todas las apuestas.");
+                 // Procesar pérdidas para todos
+                for (int i = 0; i < jugadores.length; i++) {
+                    jugadores[i].setSaldo(jugadores[i].getSaldo() - 10);
+                    banca.setSaldo(banca.getSaldo() + 10);
+                }
+                jugadorHumano.setSaldo(jugadorHumano.getSaldo() - 10);
+                banca.setSaldo(banca.getSaldo() + 10);
+                
+                System.out.println(jugadorHumano.getNombre() + ", pierdes 10€.");
+
+            } else {
+                boolean bancaEsPar = (numeroGanador % 2 == 0);
+
+                // Bots
+                for (int i = 0; i < jugadores.length; i++) {
+                    boolean jugadorEsPar = (numerosApostados[i] % 2 == 0);
+                    
+                    if (bancaEsPar == jugadorEsPar) {
+                        // Gana
+                        jugadores[i].setSaldo(jugadores[i].getSaldo() + 20);
+                        banca.setSaldo(banca.getSaldo() - 20);
+                        System.out.println("¡" + jugadores[i].getNombre() + " ACERTÓ! Gana 20€. Nuevo saldo: " + jugadores[i].getSaldo() + "€");
+                        haHabidoGanador = true;
+                    } else {
+                        // Pierde
+                        jugadores[i].setSaldo(jugadores[i].getSaldo() - 10);
+                        banca.setSaldo(banca.getSaldo() + 10);
+                    }
+                }
+
+                // Humano
+                boolean humanoEsPar = (numeroJugadorHumano % 2 == 0);
+                if (bancaEsPar == humanoEsPar) {
+                    jugadorHumano.setSaldo(jugadorHumano.getSaldo() + 20);
+                    banca.setSaldo(banca.getSaldo() - 20);
+                    System.out.println(jugadorHumano.getNombre() + " ¡HAS GANADO! (+20€)");
+                    System.out.println("Tu nuevo saldo: " + jugadorHumano.getSaldo() + "€");
+                    haHabidoGanador = true;
+                } else {
+                    jugadorHumano.setSaldo(jugadorHumano.getSaldo() - 10);
+                    banca.setSaldo(banca.getSaldo() + 10);
+                    System.out.println(jugadorHumano.getNombre() + ", has fallado.");
+                    System.out.println(" Tu saldo: " + jugadorHumano.getSaldo() + "€");
+                }
+            }
+
+            if (!haHabidoGanador && numeroGanador != 0) {
+                System.out.println("\nNadie coincidió con la banca.");
+            }
+
+            System.out.println("──────────────────────────────────────────────────────────────");
+            System.out.println("Saldo final de la Banca: " + banca.getSaldo() + "€");
+            System.out.println("══════════════════════════════════════════════════════════════\n");
+
+            // Actualizamos el contador para esperar al SIGUIENTE cambio en la próxima vuelta
+            contadorGeneracionesAnterior = EstadoJuego.contadorGeneraciones;
+
+            System.out.print("¿Quieres jugar otra ronda? (s/n): ");
+            String respuesta = sc.nextLine();
+            continuarJugando = respuesta.equalsIgnoreCase("s");
+        }
+        System.out.println("\nVolviendo al menú...\n");
     }
 
     // ═══════════════════════════════════════════════════════════════
