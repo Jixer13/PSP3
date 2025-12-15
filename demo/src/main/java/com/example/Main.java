@@ -273,7 +273,7 @@ public class Main {
             // Preguntamos si quiere jugar otra ronda
             System.out.print("¿Quieres jugar otra ronda? (s/n): ");
             String respuesta = sc.nextLine();
-            continuarJugando = respuesta.equals("s");
+            continuarJugando = respuesta.equalsIgnoreCase("s");
         }
 
         System.out.println("\nHas dejado que otro gane... \n");
