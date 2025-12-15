@@ -65,7 +65,7 @@ public class Banca {
             // GENERACIÓN DE NÚMERO GANADOR EN EL HILO BANCA //
             numeroApostado = (int) (Math.random() * 37); // 0 al 36
 
-            System.out.println("\n🏦 [ BANCA ] Ha generado el número " + numeroApostado);
+            System.out.println("* La BANCA esta lisa *");
             EstadoJuego.botsApostando = false;
 
             // NOTIFICAMOS que la ronda de generación ha terminado

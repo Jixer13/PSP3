@@ -142,7 +142,7 @@ public class Main {
                     break;
 
                 case 5:
-                    System.out.println("\nGracias por jugar en Casino GCGM");
+                    System.out.println("\n¿Tan pronto te vas? Tú te lo pierdes ...");
                     break;
 
                 default:
@@ -232,37 +232,57 @@ public class Main {
             System.out.println("RESULTADOS:");
             System.out.println("──────────────────────────────────────────────────────────────");
 
-            // Procesamos resultados de los bots
-            for (int i = 0; i < jugadores.length; i++) {
-                if (numerosApostados[i] == numeroGanador) {
-                    jugadores[i].setSaldo(jugadores[i].getSaldo() + 360);
-                    banca.setSaldo(banca.getSaldo() - 360);
-                    System.out.println("¡" + jugadores[i].getNombre() + " ha ganado 360€! Nuevo saldo: " + jugadores[i].getSaldo() + "€");
-                    haHabidoGanador = true;
-                } else {
+            // Si sale 0, la banca gana automaticamente
+            if (numeroGanador == 0) {
+                System.out.println("\nHA SALIDO EL 0 - LA BANCA GANA \n");
+
+                // Todos los jugadores pierden sus apuestas
+                for (int i = 0; i < jugadores.length; i++) {
                     jugadores[i].setSaldo(jugadores[i].getSaldo() - 10);
                     banca.setSaldo(banca.getSaldo() + 10);
                 }
-            }
 
-            // Procesamos resultado del jugador humano
-            if (numeroJugadorHumano == numeroGanador) {
-                jugadorHumano.setSaldo(jugadorHumano.getSaldo() + 360);
-                banca.setSaldo(banca.getSaldo() - 360);
-                System.out.println(jugadorHumano.getNombre() + " HAS GANADO 360€");
-                System.out.println("Tu nuevo saldo: " + jugadorHumano.getSaldo() + "€");
-                haHabidoGanador = true;
-            } else {
+                // El jugador humano tambien pierde
                 jugadorHumano.setSaldo(jugadorHumano.getSaldo() - 10);
                 banca.setSaldo(banca.getSaldo() + 10);
-                System.out.println(jugadorHumano.getNombre() + ", no has ganado esta vez");
+
+                System.out.println("Todos los jugadores pierden sus apuestas");
+                System.out.println(jugadorHumano.getNombre() + ", has perdido 10€");
                 System.out.println(" Tu saldo: " + jugadorHumano.getSaldo() + "€");
-            }
 
-            if (!haHabidoGanador) {
-                System.out.println("\nLa banca se queda con todas las apuestas");
-            }
+            } else {
+                // Procesamos resultados de los bots
+                for (int i = 0; i < jugadores.length; i++) {
+                    if (numerosApostados[i] == numeroGanador) {
+                        jugadores[i].setSaldo(jugadores[i].getSaldo() + 360);
+                        banca.setSaldo(banca.getSaldo() - 360);
+                        System.out.println("¡" + jugadores[i].getNombre() + " ha ganado 360€! Nuevo saldo: " + jugadores[i].getSaldo() + "€");
+                        haHabidoGanador = true;
+                    } else {
+                        jugadores[i].setSaldo(jugadores[i].getSaldo() - 10);
+                        banca.setSaldo(banca.getSaldo() + 10);
+                    }
+                }
 
+                // Procesamos resultado del jugador humano
+                if (numeroJugadorHumano == numeroGanador) {
+                    jugadorHumano.setSaldo(jugadorHumano.getSaldo() + 360);
+                    banca.setSaldo(banca.getSaldo() - 360);
+                    System.out.println(jugadorHumano.getNombre() + " HAS GANADO 360€");
+                    System.out.println("Tu nuevo saldo: " + jugadorHumano.getSaldo() + "€");
+                    haHabidoGanador = true;
+                } else {
+                    jugadorHumano.setSaldo(jugadorHumano.getSaldo() - 10);
+                    banca.setSaldo(banca.getSaldo() + 10);
+                    System.out.println(jugadorHumano.getNombre() + ", no has ganado esta vez");
+                    System.out.println(" Tu saldo: " + jugadorHumano.getSaldo() + "€");
+                }
+
+                if (!haHabidoGanador) {
+                    System.out.println("\nLa banca se queda con todas las apuestas");
+                }
+
+            }
             System.out.println("──────────────────────────────────────────────────────────────");
             System.out.println("Saldo final de la Banca: " + banca.getSaldo() + "€");
             System.out.println("══════════════════════════════════════════════════════════════\n");
