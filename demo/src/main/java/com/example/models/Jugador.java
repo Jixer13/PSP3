@@ -99,7 +99,7 @@ public class Jugador implements Runnable {
         while (estadoHilo) {
             try {
                 // Esperamos 5 segundos antes de generar nuevo número
-                Thread.sleep(5000);
+                Thread.sleep(2000);
 
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -117,7 +117,7 @@ public class Jugador implements Runnable {
 
             try {
                 // Esperamos 35 segundos antes del siguiente ciclo
-                Thread.sleep(35000);
+                Thread.sleep(8000);
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

@@ -10,16 +10,13 @@ public class Juego {
 
     private Map<String, Integer> apuestasRule=new HashMap<>();
     private Map<String, Integer> apuestasCoinflip=new HashMap<>();
-    private CyclicBarrier barrera;
-    private Object lockRule = new Object();
+
     private String tipoJuego = ""; // "rule" o "coinflip"
 
     public Juego() {
     }
 
-    public Juego(int numJugadores) {
-        this.barrera = new CyclicBarrier(numJugadores);
-    }
+
 
     public int rule() {
         // Genera un número entre 0 y 36 (ambos incluidos)
@@ -44,17 +41,9 @@ public class Juego {
         apuestasCoinflip.put(nombre,numeroApostado);
     }
 
-    public CyclicBarrier getBarrera() {
-        return barrera;
-    }
 
-    public void esperarEnBarrera() throws InterruptedException, BrokenBarrierException {
-        if (barrera != null) {
-            System.out.println("[HILO: " + Thread.currentThread().getName() + "] ⏳ Esperando en la barrera...");
-            barrera.await();
-            System.out.println("[HILO: " + Thread.currentThread().getName() + "] ✓ TODOS los hilos han llegado, continuando...");
-        }
-    }
+
+
 
     public String getTipoJuego() {
         return tipoJuego;
