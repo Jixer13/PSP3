@@ -76,7 +76,7 @@ public class Banca {
             try {
                 // Esperamos 35 segundos antes del siguiente ciclo
                 Thread.sleep(35000);
-
+                detenerHilo(); //modificacion para detener hilo
             } catch (InterruptedException eHilo) {
                 Thread.currentThread().interrupt();
                 break;
