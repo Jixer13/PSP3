@@ -55,7 +55,7 @@ public class Banca {
         while (estadoBanca) {
             try {
                 // Esperamos 5 segundos
-                Thread.sleep(2000);
+                Thread.sleep(5000);
 
             } catch (InterruptedException eHilo) {
                 Thread.currentThread().interrupt();
@@ -65,7 +65,7 @@ public class Banca {
             // GENERACIÓN DE NÚMERO GANADOR EN EL HILO BANCA //
             numeroApostado = (int) (Math.random() * 37); // 0 al 36
 
-
+            System.out.println("\n🏦 [ BANCA ] Ha generado el número " + numeroApostado);
             EstadoJuego.botsApostando = false;
 
             // NOTIFICAMOS que la ronda de generación ha terminado
@@ -75,8 +75,8 @@ public class Banca {
 
             try {
                 // Esperamos 35 segundos antes del siguiente ciclo
-                Thread.sleep(8000);
-
+                Thread.sleep(35000);
+                detenerHilo(); //modificacion para detener hilo
             } catch (InterruptedException eHilo) {
                 Thread.currentThread().interrupt();
                 break;
