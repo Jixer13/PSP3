@@ -72,7 +72,7 @@ public class Jugador implements Runnable {
     }
 
     // ----------------------------------------------- //
-    // -------------        HILOS         ------------ //
+    // ------------- HILOS ------------ //
     // ----------------------------------------------- //
 
     public void iniciarHiloJugador() {
@@ -89,7 +89,8 @@ public class Jugador implements Runnable {
                 hilo.start();
             }
         } catch (IllegalThreadStateException eHilo) {
-            System.out.println(" [ HILO NO INICIADO * ERROR * ] - No se pudo iniciar el hilo del jugador [ " + nombre + " ]");
+            System.out.println(
+                    " [ HILO NO INICIADO * ERROR * ] - No se pudo iniciar el hilo del jugador [ " + nombre + " ]");
         } catch (Exception e) {
             System.out.println(" [ ERROR INESPERADO ] \n" + e.getMessage());
         }
@@ -107,7 +108,7 @@ public class Jugador implements Runnable {
             }
 
             // GENERAMOS UN NUMERO ALEATORIO DEL 1 al 36 //
-            this.numeroApostado = (int)(Math.random() * 36) + 1;
+            this.numeroApostado = (int) (Math.random() * 36) + 1;
 
             // Incrementamos el contador de generaciones
             synchronized (EstadoJuego.class) {
@@ -133,8 +134,7 @@ public class Jugador implements Runnable {
         }
     }
 
-
-    private int numGenerador(){
+    private int numGenerador() {
         return ThreadLocalRandom.current().nextInt(1, 37); // 1 incluido, 37 excluido
 
     }
@@ -142,7 +142,7 @@ public class Jugador implements Runnable {
     public void run() {
         this.setSaldo(this.getSaldo() - 10);
 
-        if (!juego.equals(juego.rule())) {
+        if (!juego.getTipoJuego().equalsIgnoreCase("rule")) {
             this.setNumeroApostado(numGenerador());
             juego.apostarCoinflip(this.getNombre(), this.getNumeroApostado());
         } else {
