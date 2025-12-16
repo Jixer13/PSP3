@@ -441,8 +441,153 @@ public class Main {
     // MARTINGALA - OPCIÓN (3)
     // ═══════════════════════════════════════════════════════════════
     private static void martingala() {
-        System.out.println("⚠️ Martingala aún no está implementado\n");
+
+    boolean continuarJugando = true;
+
+    // Apuesta actual de cada jugador
+    Map<Jugador, Integer> apuestas = new HashMap<>();
+
+    // Inicializamos apuestas a 10€
+    for (Jugador j : jugadores) {
+        apuestas.put(j, 10);
     }
+    apuestas.put(jugadorHumano, 10);
+
+    int contadorGeneracionesAnterior = EstadoJuego.contadorGeneraciones;
+
+    while (continuarJugando) {
+
+        // Comprobación de banca (360€ * nº jugadores potenciales)
+        if (banca.getSaldo() < 360 * (jugadores.length + 1)) {
+            System.out.println("\nLa banca no puede pagar los premios.");
+            break;
+        }
+
+        // Comprobación de saldo del humano
+        if (jugadorHumano.getSaldo() < apuestas.get(jugadorHumano)) {
+            System.out.println("\nNo tienes saldo suficiente para continuar en Martingala.");
+            break;
+        }
+
+        // Esperar nueva generación de números
+        System.out.println("\nEsperando a que los jugadores generen nuevos números...");
+        System.out.print("Generando");
+
+        while (EstadoJuego.contadorGeneraciones == contadorGeneracionesAnterior) {
+            try {
+                Thread.sleep(1000);
+                System.out.print(".");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        System.out.println(" ¡Listos!\n");
+
+        try { Thread.sleep(500); } catch (InterruptedException e) {}
+
+        System.out.println("-------------------------------------------------");
+        System.out.println("                   MARTINGALA                   ");
+        System.out.println("-------------------------------------------------\n");
+
+        // Capturamos apuestas
+        int[] numerosBots = new int[jugadores.length];
+        for (int i = 0; i < jugadores.length; i++) {
+            numerosBots[i] = jugadores[i].getNumeroApostado();
+        }
+        int numeroHumano = jugadorHumano.getNumeroApostado();
+
+        System.out.println("APUESTAS ACTUALES:");
+        System.out.println("──────────────────────────────────────────────────────────────");
+        for (int i = 0; i < jugadores.length; i++) {
+            System.out.println("   • " + jugadores[i].getNombre() +
+                    " apuesta " + apuestas.get(jugadores[i]) + "€ al " + numerosBots[i]);
+        }
+        System.out.println("   • " + jugadorHumano.getNombre() +
+                " apuesta " + apuestas.get(jugadorHumano) + "€ al " + numeroHumano);
+        System.out.println("──────────────────────────────────────────────────────────────\n");
+
+        System.out.println("🎰 La banca gira la ruleta...\n");
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        int numeroGanador = banca.getNumeroApostado();
+
+        System.out.println("--------------------------------");
+        System.out.println("     NÚMERO GANADOR: " + numeroGanador);
+        System.out.println("--------------------------------\n");
+
+        boolean huboGanador = false;
+
+        // Bots
+        for (int i = 0; i < jugadores.length; i++) {
+            Jugador j = jugadores[i];
+            int apuestaActual = apuestas.get(j);
+
+            if (numerosBots[i] == numeroGanador) {
+                j.setSaldo(j.getSaldo() + 360);
+                banca.setSaldo(banca.getSaldo() - 360);
+                apuestas.put(j, 10);
+                System.out.println("¡" + j.getNombre() + " GANA 360€! (reinicia apuesta)");
+                huboGanador = true;
+            } else {
+                j.setSaldo(j.getSaldo() - apuestaActual);
+                banca.setSaldo(banca.getSaldo() + apuestaActual);
+
+                int siguiente = apuestaActual * 2;
+                if (siguiente > 320 || j.getSaldo() < siguiente) {
+                    apuestas.put(j, 10);
+                    System.out.println(j.getNombre() + " se retira de Martingala");
+                } else {
+                    apuestas.put(j, siguiente);
+                    System.out.println(j.getNombre() + " pierde y dobla a " + siguiente + "€");
+                }
+            }
+        }
+
+        // Jugador humano
+        int apuestaHumano = apuestas.get(jugadorHumano);
+        if (numeroHumano == numeroGanador) {
+            jugadorHumano.setSaldo(jugadorHumano.getSaldo() + 360);
+            banca.setSaldo(banca.getSaldo() - 360);
+            apuestas.put(jugadorHumano, 10);
+            System.out.println("\n🎉 HAS GANADO 360€");
+            huboGanador = true;
+        } else {
+            jugadorHumano.setSaldo(jugadorHumano.getSaldo() - apuestaHumano);
+            banca.setSaldo(banca.getSaldo() + apuestaHumano);
+
+            int siguiente = apuestaHumano * 2;
+            if (siguiente > 320 || jugadorHumano.getSaldo() < siguiente) {
+                apuestas.put(jugadorHumano, 10);
+                System.out.println("\nHas perdido y te retiras de Martingala");
+            } else {
+                apuestas.put(jugadorHumano, siguiente);
+                System.out.println("\nHas perdido. Tu próxima apuesta será de " + siguiente + "€");
+            }
+        }
+
+        if (!huboGanador) {
+            System.out.println("\nLa banca gana la ronda");
+        }
+
+        System.out.println("\nSaldo banca: " + banca.getSaldo() + "€");
+        System.out.println("Tu saldo: " + jugadorHumano.getSaldo() + "€");
+        System.out.println("══════════════════════════════════════════════════════════════\n");
+
+        contadorGeneracionesAnterior = EstadoJuego.contadorGeneraciones;
+
+        System.out.print("¿Quieres jugar otra ronda de Martingala? (s/n): ");
+        String respuesta = sc.nextLine();
+        continuarJugando = respuesta.equalsIgnoreCase("s");
+    }
+
+    System.out.println("\nVolviendo al menú...\n");
+}
+
 
     // ═══════════════════════════════════════════════════════════════
     // INFO JUGADORES - OPCIÓN (4)
