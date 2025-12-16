@@ -72,7 +72,7 @@ public class Main {
             System.out.print("Nombre: ");
             nombre = sc.nextLine();
 
-            if (nombre.length() < 3) {
+            if (nombre.length() <= 3) {
                 System.out.println(" El nombre debe tener más de 3 caracteres\n");
             }
         } while (nombre.length() <= 3);
