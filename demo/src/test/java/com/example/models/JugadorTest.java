@@ -41,7 +41,7 @@ class JugadorTest {
         int numero = jugador.getNumeroApostado();
         assertTrue(numero >= 1 && numero <= 36, "El número debe estar en el rango [1, 36], fue: " + numero);
 
-        jugador.detenerHilo(); // Clean up
+        jugador.detenerHilo();
     }
 
     // Jugador-004: Verificar que detenerHilo funciona.

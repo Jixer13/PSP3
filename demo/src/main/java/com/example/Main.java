@@ -6,6 +6,30 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.example.models.*;
 
 
+/**
+ * Clase principal que gestiona la ejecución del Casino GCGM.
+ * 
+ * <p>Responsable de:</p>
+ * <ul>
+ *   <li>Inicializar todos los hilos del sistema (banca y jugadores)</li>
+ *   <li>Presentar la interfaz de usuario interactiva</li>
+ *   <li>Gestionar los tres juegos disponibles: La Rule, Coin Flip y Martingala</li>
+ *   <li>Controlar la sincronización entre el jugador humano y los bots</li>
+ * </ul>
+ * 
+ * <p>Estructura de datos:</p>
+ * <ul>
+ *   <li>{@code sc}: Scanner para entrada de usuario</li>
+ *   <li>{@code juego}: Instancia de Juego para gestionar apuestas</li>
+ *   <li>{@code jugadorHumano}: Jugador humano con control manual</li>
+ *   <li>{@code banca}: Instancia de Banca que genera números ganadores</li>
+ *   <li>{@code jugadores}: Array de Jugadores bots (Maria, Jose, Ana)</li>
+ * </ul>
+ * 
+ * @author GAEL, CARLOS, GABRIEL y MARIANA
+ * @version 2.0
+ * @since 2024
+ */
 public class Main {
 
     private static Scanner sc = new Scanner(System.in);
@@ -156,29 +180,31 @@ public class Main {
     // LA RULE - OPCIÓN (1)
     // ═══════════════════════════════════════════════════════════════
     private static void rule() {
+        // VARIABLES DE ESTADO //
         boolean continuarJugando = true;
+        boolean haHabidoGanador = false;
         int contadorGeneracionesAnterior = EstadoJuego.contadorGeneraciones;
 
         while (continuarJugando) {
 
-            // Verificamos si la banca puede pagar
+            // VERIFICAMOS QUE LA BANCA PUEDA PAGAR A TODOS LOS JUGADORES
             if (banca.getSaldo() < (360 * 4)) {
                 System.out.println("\nLa banca no tiene suficiente saldo para pagar los premios");
                 System.out.println("   Saldo actual de la banca: " + banca.getSaldo() + "€");
                 break;
             }
 
-            // Verificamos si el jugador tiene saldo
+            // VERIFICAMOS SI EL JUGADOR TIENE SALDO
             if (jugadorHumano.getSaldo() < 10) {
                 System.out.println("\nNo tienes suficiente saldo para apostar (necesitas 10€)");
                 break;
             }
 
-            // Esperamos a que se generen nuevos numeros si es una ronda posterior
+            // ESPERAMOS A QUE SE GENEREN NUEVOS NÚMEROS SI YA SE HA JUGADO UNA RONDA
             if (contadorGeneracionesAnterior > 0) {
-                System.out.println("\nEsperando a que los jugadores generen nuevos numeros...");
+                System.out.println("\nEsperando a que los jugadores generen nuevos números...");
 
-                // Esperamos hasta que haya al menos una nueva generacion
+                // ESPERAMOS HASTA QUE TENGAMOS UNA GENERACIÓN DE NÚMEROS //
                 while (EstadoJuego.contadorGeneraciones == contadorGeneracionesAnterior) {
                     try {
                         Thread.sleep(500);
@@ -187,21 +213,22 @@ public class Main {
                     }
                 }
 
-                System.out.println("Nuevos numeros generados. Iniciando ronda...\n");
+                System.out.println("Nuevos números generados. Iniciando ronda...\n");
             }
 
             System.out.println("-------------------------------------------------");
             System.out.println("                     LA RULE                    ");
             System.out.println("-------------------------------------------------\n");
 
-            // Capturamos los números que YA HAN SIDO GENERADOS por los hilos
+            // GUARDAMOS LOS NÚMEROS QUE HAN SIDO GENERADOS POR LOS HILOS
             System.out.println("Guardando las apuestas actuales...\n");
 
-            // Guardamos los números apostados en este momento
+            // GUARDAMOS LOS NÚMEROS APOSTADOS
             int[] numerosApostados = new int[jugadores.length];
             for (int i = 0; i < jugadores.length; i++) {
                 numerosApostados[i] = jugadores[i].getNumeroApostado();
             }
+
             int numeroJugadorHumano = jugadorHumano.getNumeroApostado();
 
             System.out.println(" APUESTAS GUARDADAS :");
@@ -220,29 +247,28 @@ public class Main {
                 Thread.currentThread().interrupt();
             }
 
-            // La banca genera el número ganador (usando el que ya generó su hilo, o generamos uno nuevo)
-            int numeroGanador = (int)(Math.random() * 37); // 0 al 36
+            // LA BANCA GENERA UN NÚMERO GANADOR
+            int numeroGanador = ThreadLocalRandom.current().nextInt(0, 37); // 0 al 36
 
             System.out.println("--------------------------------");
             System.out.println("     NÚMERO GANADOR: " + String.format("%2d", numeroGanador));
             System.out.println("--------------------------------\n");
 
-            boolean haHabidoGanador = false;
 
             System.out.println("RESULTADOS:");
             System.out.println("──────────────────────────────────────────────────────────────");
 
-            // Si sale 0, la banca gana automaticamente
+            // SI SALE 0 LA BANCA GANA
             if (numeroGanador == 0) {
                 System.out.println("\nHA SALIDO EL 0 - LA BANCA GANA \n");
 
-                // Todos los jugadores pierden sus apuestas
+                // TODOS LOS JUGADORES PIERDEN SU DINERO (BOTS)
                 for (int i = 0; i < jugadores.length; i++) {
                     jugadores[i].setSaldo(jugadores[i].getSaldo() - 10);
                     banca.setSaldo(banca.getSaldo() + 10);
                 }
 
-                // El jugador humano tambien pierde
+                // EL JUGADOR HUMANO TAMBIÉN PIERDE //
                 jugadorHumano.setSaldo(jugadorHumano.getSaldo() - 10);
                 banca.setSaldo(banca.getSaldo() + 10);
 
@@ -251,12 +277,15 @@ public class Main {
                 System.out.println(" Tu saldo: " + jugadorHumano.getSaldo() + "€");
 
             } else {
-                // Procesamos resultados de los bots
+                // MIRAMOS QUE HAN SACADO LOS BOTS
                 for (int i = 0; i < jugadores.length; i++) {
+                    // SI EL NÚMERO GANADOR AGREGAMOS EL SALDO
                     if (numerosApostados[i] == numeroGanador) {
                         jugadores[i].setSaldo(jugadores[i].getSaldo() + 360);
+                        // Y SE LO QUITAMOS A LA BANCA //
                         banca.setSaldo(banca.getSaldo() - 360);
                         System.out.println("¡" + jugadores[i].getNombre() + " ha ganado 360€! Nuevo saldo: " + jugadores[i].getSaldo() + "€");
+                        // INDICAMOS QUE HAY GANADOR
                         haHabidoGanador = true;
                     } else {
                         jugadores[i].setSaldo(jugadores[i].getSaldo() - 10);
@@ -264,20 +293,26 @@ public class Main {
                     }
                 }
 
-                // Procesamos resultado del jugador humano
+                // COMPROBAMOS EL NÚMERO DEL JUGADOR (IGUAL QUE LOS BOTS PERO SOLO SE COMPRUEBA 1 VEZ)
                 if (numeroJugadorHumano == numeroGanador) {
+                    // LE AGREGAMOS EL DINERO AL JUGADOR
                     jugadorHumano.setSaldo(jugadorHumano.getSaldo() + 360);
+                    // SE LO QUITAMOS A LA BANCA
                     banca.setSaldo(banca.getSaldo() - 360);
                     System.out.println(jugadorHumano.getNombre() + " HAS GANADO 360€");
                     System.out.println("Tu nuevo saldo: " + jugadorHumano.getSaldo() + "€");
+                    // INDICAMOS QUE HA HABIDO GANADOR
                     haHabidoGanador = true;
                 } else {
+                    // SI PIERDE SE LE RESTA LO QUE CUESTA LA PARTIDA
                     jugadorHumano.setSaldo(jugadorHumano.getSaldo() - 10);
+                    // Y AGREGAMOS A LA BANCA EL DINERO QUE HA PERDIDO EL JUGADOR
                     banca.setSaldo(banca.getSaldo() + 10);
                     System.out.println(jugadorHumano.getNombre() + ", no has ganado esta vez");
                     System.out.println(" Tu saldo: " + jugadorHumano.getSaldo() + "€");
                 }
 
+                // SI NO HAY GANADORES SACAMOS POR PANTALLA ESTÉ MENSAJE
                 if (!haHabidoGanador) {
                     System.out.println("\nLa banca se queda con todas las apuestas");
                 }
@@ -287,10 +322,10 @@ public class Main {
             System.out.println("Saldo final de la Banca: " + banca.getSaldo() + "€");
             System.out.println("══════════════════════════════════════════════════════════════\n");
 
-            // Actualizamos el contador para la proxima ronda
+            // ACTUALIZAMOS EL CONTADOR PARA LA PRÓXIMA RONDA
             contadorGeneracionesAnterior = EstadoJuego.contadorGeneraciones;
 
-            // Preguntamos si quiere jugar otra ronda
+            // PREGUNTAMOS AL JUGADOR SI QUIERE VOLVER A JUGAR
             System.out.print("¿Quieres jugar otra ronda? (s/n): ");
             String respuesta = sc.nextLine();
             continuarJugando = respuesta.equalsIgnoreCase("s");
